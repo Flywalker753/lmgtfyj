@@ -7,26 +7,23 @@
   <style>
     :root {
       --bg: #ffffff;
-      --fg: #111827;          /* gris très foncé */
-      --muted: #6b7280;       /* gris moyen */
-      --accent: #3b82f6;      /* bleu */
-      --card: #ffffff;        /* cartes blanches */
-      --border: #e5e7eb;      /* bordure claire */
+      --fg: #111827;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --card: #ffffff;
+      --border: #e5e7eb;
       --input: #ffffff;
       --input-border: #d1d5db;
-      --pill-bg: #eef2ff;     /* bleu très clair */
-      --pill-border: #c7d2fe; /* bleu clair */
+      --pill-bg: #eef2ff;
+      --pill-border: #c7d2fe;
     }
-
     html,body{height:100%}
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--fg);
+      background:var(--bg);color:var(--fg);
       display:flex;align-items:center;justify-content:center;
     }
-
     .wrap{width:min(880px,95vw);}
     .card{
       background:var(--card);
@@ -35,25 +32,27 @@
       padding:20px 22px;
       box-shadow:0 6px 24px rgba(0,0,0,.06)
     }
-    h1{margin:0 0 6px;font-size:28px}
+    h1.mega{
+      margin:0 0 14px;
+      font-size: clamp(28px, 6vw, 56px);
+      font-weight: 900;
+      text-align:center;
+      color:#1d4ed8;
+    }
     p{margin:.25rem 0 .75rem;color:var(--muted)}
     label{display:block;margin:12px 0 6px;color:#374151;font-weight:600}
-
     input[type="text"],select,input[type="number"]{
       width:100%;padding:12px 14px;border-radius:12px;
       border:1px solid var(--input-border);
       background:var(--input);color:var(--fg);font-size:16px;
     }
-
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
     .btn{
       appearance:none;border:0;border-radius:12px;padding:12px 16px;
       background:var(--accent);color:#ffffff;font-weight:700;cursor:pointer
     }
     .subtle{background:#1118270d;color:#111827}
     .btn[disabled]{opacity:.6;cursor:not-allowed}
-
     .out{margin-top:12px;display:flex;gap:8px;align-items:center}
     .linkbox{
       flex:1;background:#f9fafb;border:1px solid var(--border);
@@ -63,7 +62,6 @@
     .switch{display:flex;gap:14px;align-items:center;margin-top:10px}
     .switch input{margin-right:6px}
 
-    /* Demo / animation view */
     .stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;padding:36px}
     .fake-search{
       display:flex;align-items:center;gap:10px;background:#fff;
@@ -72,69 +70,40 @@
     }
     .fake-search input{all:unset;color:#111827;font-size:18px;flex:1}
     .fake-search .mag{
-      width:20px;height:20px;border-radius:50%;border:3px solid #3b82f6;position:relative
+      width:20px;height:20px;border-radius:50%;border:3px solid var(--accent);position:relative
     }
     .fake-search .mag:after{
-      content:"";position:absolute;right:-7px;bottom:-7px;width:10px;height:3px;background:#3b82f6;transform:rotate(45deg);border-radius:2px
+      content:"";position:absolute;right:-7px;bottom:-7px;width:10px;height:3px;background:var(--accent);transform:rotate(45deg);border-radius:2px
     }
     .cursor{
       position:absolute;width:22px;height:22px;border:2px solid #111827;
       border-left-color:transparent;border-top-color:transparent;
       transform:rotate(45deg);border-radius:2px;left:20px;top:12px;
-      transition:all .7s ease;opacity:.9;filter:drop-shadow(0 2px 4px rgba(0,0,0,.12))
+      transition:all .7s ease;opacity:.9;
     }
-
-    .logo{font-weight:900;letter-spacing:.3px}
-
-    /* --- GROS TITRE COMPTA GPT 3000 --- */
-    .mega {
-      margin: 0 0 10px;
-      font-size: clamp(32px, 6vw, 64px);
-      font-weight: 900;
-      letter-spacing: .5px;
-      text-align: center;
-      background: linear-gradient(90deg, #111827, #1d4ed8);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      filter: drop-shadow(0 6px 14px rgba(0,0,0,.12));
-    }
-
-    /* Étapes côte à côte */
     .steps{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
     .pill{
       display:inline-block;background:var(--pill-bg);
       border:1px solid var(--pill-border);border-radius:999px;
       padding:6px 10px;color:#3730a3;font-size:12px;font-weight:600
     }
-
-    /* Matrix canvas */
-    .matrix-bg {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      opacity: .10;          /* intensité du fond */
-      pointer-events: none;
+    .final-msg{
+      margin-top:12px;
+      font-size:14px;
+      color:#047857;
+      font-weight:600;
+      text-align:center;
     }
-    /* Place le contenu au-dessus du canvas */
-    .stage > *:not(canvas) { position: relative; z-index: 1; }
-
-    /* Désactiver l’animation si l’utilisateur préfère moins d’animations */
-    @media (prefers-reduced-motion: reduce) {
-      .matrix-bg { display: none; }
-    }
-
-    a{color:#1d4ed8}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card" id="builder">
-      <h1 class="logo">🤖 COMPTA GPT 3000 🤖</h1>
-      <p>Génère un lien qui <em>montre</em> la saisie puis redirige vers un moteur de recherche. Aucune dépendance, 1 seul fichier, hébergeable partout.</p>
+      <h1 class="mega">🤖 COMPTA GPT 3000 🤖</h1>
+      <p>Génère un lien qui <em>montre</em> la saisie puis redirige vers un moteur de recherche.</p>
 
       <label for="q">Requête</label>
-      <input id="q" type="text" placeholder="Ex: comment exporter un grand livre en PDF" />
+      <input id="q" type="text" placeholder="Ex: paiement espèce max journalier" />
 
       <div class="row">
         <div>
@@ -155,7 +124,7 @@
 
       <div class="switch">
         <label><input type="checkbox" id="autoredirect" checked> Rediriger automatiquement</label>
-        <label><input type="checkbox" id="newtab"> Ouvrir la recherche dans un nouvel onglet</label>
+        <label><input type="checkbox" id="newtab"> Ouvrir dans un nouvel onglet</label>
       </div>
 
       <div style="margin-top:12px;display:flex;gap:8px">
@@ -167,28 +136,19 @@
         <div class="linkbox" id="linkbox"></div>
         <button class="btn" id="copy">Copier</button>
       </div>
-      <p class="hint">Astuce : le lien est basé sur l’URL où ce fichier est hébergé (<span id="base"></span>).</p>
     </div>
 
     <div class="card" id="player" style="display:none;margin-top:14px">
       <div class="stage">
-        <!-- Canvas Matrix en fond -->
-        <canvas id="matrix" class="matrix-bg" aria-hidden="true"></canvas>
-
-        <!-- GROS TITRE -->
-        <h2 class="mega">🤖 COMPTA GPT 3000 🤖</h2>
-
+        <h1 class="mega">🤖 COMPTA GPT 3000 🤖</h1>
         <div class="cursor" id="cursor"></div>
-
-        <!-- Étapes qui s'accumulent côte à côte -->
         <div class="steps" id="steps"></div>
-
         <div class="fake-search">
           <div class="mag"></div>
           <input id="fakeInput" placeholder="Tape la requête ici…"/>
         </div>
-
         <div class="hint">Ce lien va bientôt t’emmener vers <span id="engineName"></span>…</div>
+        <div class="final-msg" id="finalMsg" style="display:none">Tu vois c'était pas si dur que ça :D</div>
       </div>
     </div>
   </div>
@@ -207,8 +167,7 @@
       const params = new URLSearchParams(location.search);
       const hasQuery = params.has('q');
 
-      // Builder view
-      $('#base').textContent = location.origin + location.pathname;
+      $('#base')?.textContent = location.origin + location.pathname;
       const makeLink = () => {
         const q = $('#q').value.trim();
         const engine = $('#engine').value;
@@ -220,32 +179,27 @@
         url.search = new URLSearchParams({q, engine, delay, r, nt}).toString();
         return url.toString();
       };
-      function showOut(){
+      $('#gen')?.addEventListener('click', () => {
         const link = makeLink();
         if(!link){ alert('Entre une requête d\'abord.'); return; }
         $('#linkbox').textContent = link;
         $('#out').style.display = 'flex';
-      }
-      $('#gen').addEventListener('click', showOut);
-      $('#copy').addEventListener('click', async () => {
+      });
+      $('#copy')?.addEventListener('click', async () => {
         const link = $('#linkbox').textContent;
         try{
           await navigator.clipboard.writeText(link);
           const old = $('#copy').textContent; $('#copy').textContent = 'Copié !';
           setTimeout(()=>$('#copy').textContent=old,900);
-        }catch{
-          alert('Impossible de copier, copie manuelle requise.');
-        }
+        }catch{ alert('Impossible de copier.'); }
       });
-      $('#preview').addEventListener('click', () => {
+      $('#preview')?.addEventListener('click', () => {
         const link = makeLink();
         if(!link){ alert('Entre une requête d\'abord.'); return; }
         location.href = link;
       });
 
-      // Player view
       if(hasQuery){
-        // Hide builder, show player
         $('#builder').style.display='none';
         $('#player').style.display='block';
         const q = params.get('q');
@@ -254,12 +208,12 @@
         const delay = Math.max(0, parseInt(params.get('delay')||'2',10));
         const redirect = (params.get('r')||'1')==='1';
         const newtab = (params.get('nt')||'0')==='1';
-
         $('#engineName').textContent = engine.name;
 
         const cursor = $('#cursor');
         const box = $('#fakeInput');
         const steps = $('#steps');
+        const finalMsg = $('#finalMsg');
 
         const addStep = (txt) => {
           const el = document.createElement('div');
@@ -267,34 +221,25 @@
           el.textContent = txt;
           steps.appendChild(el);
         };
-
         const moveCursorTo = (el) => {
           const r = el.getBoundingClientRect();
-          const x = r.left + r.width*0.08 + window.scrollX;
-          const y = r.top + r.height*0.5 + window.scrollY;
-          cursor.style.left = x + 'px';
-          cursor.style.top  = y + 'px';
+          cursor.style.left = (r.left + r.width*0.08 + window.scrollX) + 'px';
+          cursor.style.top  = (r.top + r.height*0.5 + window.scrollY) + 'px';
         };
 
-        // Étape 1
-        addStep('Étape 1 : Aller au champ de recherche');
+        addStep('Ouvrir ton navigateur');
         setTimeout(()=>{
           moveCursorTo(box);
-
-          // Étape 2
-          addStep('Étape 2 : Saisir la requête');
+          addStep('Taper ta question');
           box.focus();
 
-          const text = q;
           let i=0;
           const typer = setInterval(()=>{
-            box.value = text.slice(0, i++);
-            if(i>text.length){
+            box.value = q.slice(0, i++);
+            if(i>q.length){
               clearInterval(typer);
-
-              // Étape 3
-              addStep('Étape 3 : Rechercher');
-
+              addStep('Cliquer sur rechercher');
+              finalMsg.style.display = 'block';
               setTimeout(()=>{
                 const target = engine.url(q);
                 if(redirect){
@@ -303,61 +248,9 @@
                 }
               }, delay*1000);
             }
-          }, Math.max(35, Math.min(85, 2400/(text.length||1))));
+          }, Math.max(35, Math.min(85, 2400/(q.length||1))));
         }, 450);
       }
-    })();
-
-    // --- Matrix background (sobre, responsive) ---
-    (function(){
-      const canvas = document.getElementById('matrix');
-      if(!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const parent = canvas.parentElement; // .stage
-
-      function size() {
-        const r = parent.getBoundingClientRect();
-        canvas.width  = Math.max(600, Math.floor(r.width));
-        canvas.height = Math.max(260, Math.floor(r.height));
-      }
-      size();
-
-      const chars = 'アカサタナハマヤラワ0123456789$€#+-*/=';
-      const fontSize = 14;
-      let columns, drops;
-
-      function resetDrops(){
-        columns = Math.floor(canvas.width / fontSize);
-        drops = new Array(columns).fill(1 + Math.random()*10);
-      }
-      resetDrops();
-      window.addEventListener('resize', ()=>{ size(); resetDrops(); });
-
-      let last = 0;
-      function draw(ts){
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        if (ts - last < 33) { requestAnimationFrame(draw); return; } // ~30 FPS
-        last = ts;
-
-        ctx.fillStyle = 'rgba(29, 78, 216, 0.08)'; // bleu translucide
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = '#1d4ed8';
-        ctx.font = fontSize + 'px monospace';
-
-        for (let i = 0; i < drops.length; i++) {
-          const text = chars[Math.floor(Math.random() * chars.length)];
-          const x = i * fontSize;
-          const y = drops[i] * fontSize;
-          ctx.fillText(text, x, y);
-
-          if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
-          drops[i]++;
-        }
-
-        requestAnimationFrame(draw);
-      }
-      requestAnimationFrame(draw);
     })();
   </script>
 </body>
