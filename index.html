@@ -136,6 +136,8 @@
         <div class="linkbox" id="linkbox"></div>
         <button class="btn" id="copy">Copier</button>
       </div>
+      <!-- Span pour afficher l'URL de base -->
+      <p class="hint">Lien basé sur : <span id="base"></span></p>
     </div>
 
     <div class="card" id="player" style="display:none;margin-top:14px">
@@ -167,7 +169,9 @@
       const params = new URLSearchParams(location.search);
       const hasQuery = params.has('q');
 
-      $('#base')?.textContent = location.origin + location.pathname;
+      // Afficher l'URL de base
+      $('#base').textContent = location.origin + location.pathname;
+
       const makeLink = () => {
         const q = $('#q').value.trim();
         const engine = $('#engine').value;
@@ -179,13 +183,15 @@
         url.search = new URLSearchParams({q, engine, delay, r, nt}).toString();
         return url.toString();
       };
-      $('#gen')?.addEventListener('click', () => {
+
+      $('#gen').addEventListener('click', () => {
         const link = makeLink();
         if(!link){ alert('Entre une requête d\'abord.'); return; }
         $('#linkbox').textContent = link;
         $('#out').style.display = 'flex';
       });
-      $('#copy')?.addEventListener('click', async () => {
+
+      $('#copy').addEventListener('click', async () => {
         const link = $('#linkbox').textContent;
         try{
           await navigator.clipboard.writeText(link);
@@ -193,7 +199,8 @@
           setTimeout(()=>$('#copy').textContent=old,900);
         }catch{ alert('Impossible de copier.'); }
       });
-      $('#preview')?.addEventListener('click', () => {
+
+      $('#preview').addEventListener('click', () => {
         const link = makeLink();
         if(!link){ alert('Entre une requête d\'abord.'); return; }
         location.href = link;
