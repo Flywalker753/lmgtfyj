@@ -86,6 +86,20 @@
 
     .logo{font-weight:900;letter-spacing:.3px}
 
+    /* --- GROS TITRE COMPTA GPT 3000 --- */
+    .mega {
+      margin: 0 0 10px;
+      font-size: clamp(32px, 6vw, 64px);
+      font-weight: 900;
+      letter-spacing: .5px;
+      text-align: center;
+      background: linear-gradient(90deg, #111827, #1d4ed8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.12));
+    }
+
     /* Étapes côte à côte */
     .steps{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
     .pill{
@@ -94,13 +108,29 @@
       padding:6px 10px;color:#3730a3;font-size:12px;font-weight:600
     }
 
+    /* Matrix canvas */
+    .matrix-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      opacity: .10;          /* intensité du fond */
+      pointer-events: none;
+    }
+    /* Place le contenu au-dessus du canvas */
+    .stage > *:not(canvas) { position: relative; z-index: 1; }
+
+    /* Désactiver l’animation si l’utilisateur préfère moins d’animations */
+    @media (prefers-reduced-motion: reduce) {
+      .matrix-bg { display: none; }
+    }
+
     a{color:#1d4ed8}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card" id="builder">
-      <h1 class="logo">COMPTA GPT 3000</h1>
+      <h1 class="logo">🤖 COMPTA GPT 3000 🤖</h1>
       <p>Génère un lien qui <em>montre</em> la saisie puis redirige vers un moteur de recherche. Aucune dépendance, 1 seul fichier, hébergeable partout.</p>
 
       <label for="q">Requête</label>
@@ -137,13 +167,20 @@
         <div class="linkbox" id="linkbox"></div>
         <button class="btn" id="copy">Copier</button>
       </div>
-      <p class="hint">Astuce : le lien est basé sur l’URL où ce fichier est hébergé (<span id="base"></span>). Dépose-le sur GitHub Pages, Netlify, Vercel, un partage d’équipe, etc.</p>
+      <p class="hint">Astuce : le lien est basé sur l’URL où ce fichier est hébergé (<span id="base"></span>).</p>
     </div>
 
     <div class="card" id="player" style="display:none;margin-top:14px">
       <div class="stage">
+        <!-- Canvas Matrix en fond -->
+        <canvas id="matrix" class="matrix-bg" aria-hidden="true"></canvas>
+
+        <!-- GROS TITRE -->
+        <h2 class="mega">🤖 COMPTA GPT 3000 🤖</h2>
+
         <div class="cursor" id="cursor"></div>
-        <!-- NOUVEAU : les étapes s'accumulent ici -->
+
+        <!-- Étapes qui s'accumulent côte à côte -->
         <div class="steps" id="steps"></div>
 
         <div class="fake-search">
@@ -269,6 +306,58 @@
           }, Math.max(35, Math.min(85, 2400/(text.length||1))));
         }, 450);
       }
+    })();
+
+    // --- Matrix background (sobre, responsive) ---
+    (function(){
+      const canvas = document.getElementById('matrix');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const parent = canvas.parentElement; // .stage
+
+      function size() {
+        const r = parent.getBoundingClientRect();
+        canvas.width  = Math.max(600, Math.floor(r.width));
+        canvas.height = Math.max(260, Math.floor(r.height));
+      }
+      size();
+
+      const chars = 'アカサタナハマヤラワ0123456789$€#+-*/=';
+      const fontSize = 14;
+      let columns, drops;
+
+      function resetDrops(){
+        columns = Math.floor(canvas.width / fontSize);
+        drops = new Array(columns).fill(1 + Math.random()*10);
+      }
+      resetDrops();
+      window.addEventListener('resize', ()=>{ size(); resetDrops(); });
+
+      let last = 0;
+      function draw(ts){
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (ts - last < 33) { requestAnimationFrame(draw); return; } // ~30 FPS
+        last = ts;
+
+        ctx.fillStyle = 'rgba(29, 78, 216, 0.08)'; // bleu translucide
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#1d4ed8';
+        ctx.font = fontSize + 'px monospace';
+
+        for (let i = 0; i < drops.length; i++) {
+          const text = chars[Math.floor(Math.random() * chars.length)];
+          const x = i * fontSize;
+          const y = drops[i] * fontSize;
+          ctx.fillText(text, x, y);
+
+          if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
     })();
   </script>
 </body>
