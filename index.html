@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LMGTFY – mini clone</title>
+  <style>
+    :root { --bg: #0b1020; --fg: #e7ecf3; --muted:#9aa6b2; --accent:#59a5ff; --card:#111830; --ok:#2ecc71; --warn:#ffb020; }
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);display:flex;align-items:center;justify-content:center}
+    .wrap{width:min(880px,95vw);}
+    .card{background:var(--card);border:1px solid #1f2a44;border-radius:16px;padding:20px 22px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
+    h1{margin:0 0 6px;font-size:28px}
+    p{margin:.25rem 0 .75rem;color:var(--muted)}
+    label{display:block;margin:12px 0 6px;color:#c8d4e3;font-weight:600}
+    input[type="text"],select,input[type="number"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2b395f;background:#0b142d;color:var(--fg);font-size:16px;}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:#07142b;font-weight:700;cursor:pointer}
+    .subtle{background:#1f2a44;color:#d6def0}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .out{margin-top:12px;display:flex;gap:8px;align-items:center}
+    .linkbox{flex:1;background:#0b142d;border:1px solid #2b395f;border-radius:10px;padding:10px 12px;overflow:auto;white-space:nowrap}
+    .hint{font-size:12px;color:var(--muted)}
+    .switch{display:flex;gap:14px;align-items:center;margin-top:10px}
+    .switch input{margin-right:6px}
+
+    /* Demo / animation view */
+    .stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;padding:40px}
+    .fake-search{display:flex;align-items:center;gap:10px;background:#0b142d;border:1px solid #2b395f;border-radius:999px;padding:12px 16px;width:min(640px,90%)}
+    .fake-search input{all:unset;color:#dfe7f3;font-size:18px;flex:1}
+    .fake-search .mag{width:20px;height:20px;border-radius:50%;border:3px solid #7fa8ff;position:relative}
+    .fake-search .mag:after{content:"";position:absolute;right:-7px;bottom:-7px;width:10px;height:3px;background:#7fa8ff;transform:rotate(45deg);border-radius:2px}
+    .cursor{position:absolute;width:22px;height:22px;border:2px solid #fff;border-left-color:transparent;border-top-color:transparent;transform:rotate(45deg);border-radius:2px;left:20px;top:12px;transition:all .7s ease;opacity:.9;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+    .steps{color:#cbd6ea;font-size:14px}
+    .logo{font-weight:900;letter-spacing:.3px}
+    .kbd{display:inline-block;border:1px solid #2b395f;border-bottom-width:3px;background:#0b142d;border-radius:8px;padding:3px 6px;font-weight:700;color:#cbd6ea}
+    .pill{display:inline-block;background:#10234a;border:1px solid #2b395f;border-radius:999px;padding:6px 10px;color:#a8b7d1;font-size:12px}
+    a{color:#8ec2ff}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="builder">
+      <h1 class="logo">LMGTFY – mini clone</h1>
+      <p>Génère un lien qui <em>montre</em> la saisie puis redirige vers un moteur de recherche. Aucune dépendance, 1 seul fichier, hébergeable partout.</p>
+
+      <label for="q">Requête</label>
+      <input id="q" type="text" placeholder="Ex: comment vider le cache de chrome" />
+
+      <div class="row">
+        <div>
+          <label for="engine">Moteur</label>
+          <select id="engine">
+            <option value="google">Google</option>
+            <option value="ddg">DuckDuckGo</option>
+            <option value="bing">Bing</option>
+            <option value="qwant">Qwant</option>
+            <option value="ecosia">Ecosia</option>
+          </select>
+        </div>
+        <div>
+          <label for="delay">Délai avant redirection (s)</label>
+          <input id="delay" type="number" min="0" max="15" step="1" value="2"/>
+        </div>
+      </div>
+
+      <div class="switch">
+        <label><input type="checkbox" id="autoredirect" checked> Rediriger automatiquement</label>
+        <label><input type="checkbox" id="newtab"> Ouvrir la recherche dans un nouvel onglet</label>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn" id="gen">Générer le lien</button>
+        <button class="btn subtle" id="preview">Aperçu</button>
+      </div>
+
+      <div class="out" id="out" style="display:none">
+        <div class="linkbox" id="linkbox"></div>
+        <button class="btn" id="copy">Copier</button>
+      </div>
+      <p class="hint">Astuce : le lien est basé sur l’URL où ce fichier est hébergé (<span id="base"></span>). Dépose-le sur GitHub Pages, Netlify, Vercel, un partage d’équipe, etc.</p>
+    </div>
+
+    <div class="card" id="player" style="display:none;margin-top:14px">
+      <div class="stage">
+        <div class="cursor" id="cursor"></div>
+        <div class="pill" id="step">Étape 1 : Aller au champ de recherche…</div>
+        <div class="fake-search">
+          <div class="mag"></div>
+          <input id="fakeInput" placeholder="Tape la requête ici…"/>
+        </div>
+        <div class="steps">Ce lien va bientôt t’emmener vers <span id="engineName"></span>…</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const $ = s => document.querySelector(s);
+      const e = encodeURIComponent;
+      const ENGINES = {
+        google: {name:'Google', url:q=>`https://www.google.com/search?q=${e(q)}`},
+        ddg:    {name:'DuckDuckGo', url:q=>`https://duckduckgo.com/?q=${e(q)}`},
+        bing:   {name:'Bing', url:q=>`https://www.bing.com/search?q=${e(q)}`},
+        qwant:  {name:'Qwant', url:q=>`https://www.qwant.com/?q=${e(q)}`},
+        ecosia: {name:'Ecosia', url:q=>`https://www.ecosia.org/search?q=${e(q)}`}
+      };
+      const params = new URLSearchParams(location.search);
+      const hasQuery = params.has('q');
+
+      // Builder view
+      $('#base').textContent = location.origin + location.pathname;
+      const makeLink = () => {
+        const q = $('#q').value.trim();
+        const engine = $('#engine').value;
+        const delay = Math.max(0, parseInt($('#delay').value||'0',10));
+        const r = $('#autoredirect').checked ? 1 : 0;
+        const nt = $('#newtab').checked ? 1 : 0;
+        if(!q) return '';
+        const url = new URL(location.href);
+        url.search = new URLSearchParams({q, engine, delay, r, nt}).toString();
+        return url.toString();
+      };
+      function showOut(){
+        const link = makeLink();
+        if(!link){ alert('Entre une requête d\'abord.'); return; }
+        $('#linkbox').textContent = link;
+        $('#out').style.display = 'flex';
+      }
+      $('#gen').addEventListener('click', showOut);
+      $('#copy').addEventListener('click', async () => {
+        const link = $('#linkbox').textContent;
+        try{ await navigator.clipboard.writeText(link); 
+             const old = $('#copy').textContent; $('#copy').textContent = 'Copié !';
+             setTimeout(()=>$('#copy').textContent=old,900);
+        }catch{ alert('Impossible de copier, copie manuelle requise.'); }
+      });
+      $('#preview').addEventListener('click', () => {
+        const link = makeLink();
+        if(!link){ alert('Entre une requête d\'abord.'); return; }
+        location.href = link;
+      });
+
+      // Player view
+      if(hasQuery){
+        // Hide builder, show player
+        $('#builder').style.display='none';
+        $('#player').style.display='block';
+        const q = params.get('q');
+        const engineKey = params.get('engine')||'google';
+        const engine = ENGINES[engineKey] || ENGINES.google;
+        const delay = Math.max(0, parseInt(params.get('delay')||'2',10));
+        const redirect = (params.get('r')||'1')==='1';
+        const newtab = (params.get('nt')||'0')==='1';
+
+        $('#engineName').textContent = engine.name;
+
+        const cursor = $('#cursor');
+        const box = $('#fakeInput');
+        const moveCursorTo = (el) => {
+          const r = el.getBoundingClientRect();
+          // move towards the left side inside the input
+          const x = r.left + r.width*0.08 + window.scrollX;
+          const y = r.top + r.height*0.5 + window.scrollY;
+          cursor.style.left = x + 'px';
+          cursor.style.top  = y + 'px';
+        };
+
+        // Step 1: move cursor
+        setTimeout(()=>{
+          moveCursorTo(box);
+          $('#step').textContent = 'Étape 2 : Saisir la requête…';
+          box.focus();
+          // Step 2: type
+          const text = q;
+          let i=0;
+          const typer = setInterval(()=>{
+            box.value = text.slice(0, i++);
+            if(i>text.length){
+              clearInterval(typer);
+              $('#step').textContent = 'Étape 3 : Rechercher…';
+              // Little pause then redirect
+              setTimeout(()=>{
+                const target = engine.url(q);
+                if(redirect){
+                  if(newtab){ window.open(target, '_blank', 'noopener'); }
+                  window.location.href = target;
+                }
+              }, delay*1000);
+            }
+          }, Math.max(35, Math.min(85, 2400/(text.length||1))));
+        }, 450);
+      }
+    })();
+  </script>
+</body>
+</html>
